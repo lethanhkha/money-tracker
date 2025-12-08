@@ -73,19 +73,63 @@ export default function RegisterPage() {
     try {
       await register({ name, email, password });
     } catch (err: any) {
-      // Handle different error types from backend
-      if (err.response?.data?.error) {
-        const backendError = err.response.data.error;
-        if (typeof backendError === "string") {
-          setError(backendError);
-        } else if (Array.isArray(backendError)) {
-          // Zod validation errors
-          const errorMessages = backendError
-            .map((e: any) => e.message)
-            .join(", ");
-          setError(errorMessages);
+      // Handle network errors
+      if (!err.response) {
+        setError(
+          "Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối internet."
+        );
+        setLoading(false);
+        return;
+      }
+
+      // Handle HTTP status codes
+      const status = err.response?.status;
+      const backendError = err.response?.data?.error;
+
+      if (status === 400) {
+        if (
+          backendError?.includes("email") ||
+          backendError?.includes("Email")
+        ) {
+          setError("Email đã được sử dụng. Vui lòng sử dụng email khác.");
         } else {
-          setError("Đăng ký thất bại");
+          setError("Thông tin đăng ký không hợp lệ. Vui lòng kiểm tra lại.");
+        }
+      } else if (status === 409) {
+        setError("Email đã được sử dụng. Vui lòng sử dụng email khác.");
+      } else if (status === 429) {
+        setError("Bạn đã thử đăng ký quá nhiều lần. Vui lòng thử lại sau.");
+      } else if (status === 500) {
+        setError("Lỗi máy chủ. Vui lòng thử lại sau ít phút.");
+      } else if (status === 503) {
+        setError("Hệ thống đang bảo trì. Vui lòng thử lại sau.");
+      } else if (backendError) {
+        // Handle backend validation errors
+        if (typeof backendError === "string") {
+          // Translate common backend errors
+          const errorMap: { [key: string]: string } = {
+            "User already exists": "Email đã được sử dụng",
+            "Email already exists": "Email đã được sử dụng",
+            "Email already in use": "Email đã được sử dụng",
+            "Invalid email format": "Định dạng email không hợp lệ",
+            "Password too short": "Mật khẩu quá ngắn",
+            "Name is required": "Vui lòng nhập họ tên",
+            "Email is required": "Vui lòng nhập email",
+            "Password is required": "Vui lòng nhập mật khẩu",
+          };
+          setError(errorMap[backendError] || backendError);
+        } else if (Array.isArray(backendError)) {
+          // Zod validation errors - translate them
+          const translatedErrors = backendError.map((e: any) => {
+            const msg = e.message || "";
+            if (msg.includes("email")) return "Email không hợp lệ";
+            if (msg.includes("password")) return "Mật khẩu không hợp lệ";
+            if (msg.includes("name")) return "Họ tên không hợp lệ";
+            return msg;
+          });
+          setError(translatedErrors.join(", "));
+        } else {
+          setError("Đăng ký thất bại. Vui lòng thử lại.");
         }
       } else {
         setError(err.message || "Đăng ký thất bại. Vui lòng thử lại.");

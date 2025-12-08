@@ -50,11 +50,42 @@ export default function LoginPage() {
     try {
       await login({ email, password });
     } catch (err: any) {
-      // Handle different error types from backend
-      if (err.response?.data?.error) {
-        const backendError = err.response.data.error;
+      // Handle network errors
+      if (!err.response) {
+        setError(
+          "Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối internet."
+        );
+        setLoading(false);
+        return;
+      }
+
+      // Handle HTTP status codes
+      const status = err.response?.status;
+      const backendError = err.response?.data?.error;
+
+      if (status === 401) {
+        setError("Đăng nhập thất bại. Email hoặc mật khẩu không chính xác.");
+      } else if (status === 404) {
+        setError("Tài khoản không tồn tại. Vui lòng kiểm tra lại email.");
+      } else if (status === 429) {
+        setError("Bạn đã thử đăng nhập quá nhiều lần. Vui lòng thử lại sau.");
+      } else if (status === 500) {
+        setError("Lỗi máy chủ. Vui lòng thử lại sau ít phút.");
+      } else if (status === 503) {
+        setError("Hệ thống đang bảo trì. Vui lòng thử lại sau.");
+      } else if (backendError) {
+        // Handle backend validation errors
         if (typeof backendError === "string") {
-          setError(backendError);
+          // Translate common backend errors
+          const errorMap: { [key: string]: string } = {
+            "Invalid credentials": "Email hoặc mật khẩu không chính xác",
+            "User not found": "Tài khoản không tồn tại",
+            "Email not found": "Email chưa được đăng ký",
+            "Incorrect password": "Mật khẩu không chính xác",
+            "Invalid or expired token": "Phiên đăng nhập đã hết hạn",
+            "No token provided": "Phiên đăng nhập không hợp lệ",
+          };
+          setError(errorMap[backendError] || backendError);
         } else if (Array.isArray(backendError)) {
           // Zod validation errors
           const errorMessages = backendError
@@ -62,7 +93,7 @@ export default function LoginPage() {
             .join(", ");
           setError(errorMessages);
         } else {
-          setError("Đăng nhập thất bại");
+          setError("Đăng nhập thất bại. Vui lòng thử lại.");
         }
       } else {
         setError(err.message || "Đăng nhập thất bại. Vui lòng thử lại.");
