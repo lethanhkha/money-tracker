@@ -7,6 +7,7 @@ const axiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  timeout: 30000, // 30 seconds timeout for cold start
 });
 
 // Request interceptor to add token
@@ -26,7 +27,19 @@ axiosInstance.interceptors.request.use(
 // Response interceptor to handle errors
 axiosInstance.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Retry logic for 500 errors (server cold start)
+    if (error.response?.status === 500 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      // Wait 2 seconds before retry (give server time to wake up)
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      
+      return axiosInstance(originalRequest);
+    }
+
     // Only redirect to login if 401 is from authenticated endpoints
     // Don't redirect if 401 is from login/register endpoints (invalid credentials)
     if (error.response?.status === 401) {
