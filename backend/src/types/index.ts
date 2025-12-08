@@ -1,3 +1,14 @@
+// Express Request extension
+declare global {
+  namespace Express {
+    interface Request {
+      user?: {
+        userId: string;
+      };
+    }
+  }
+}
+
 export interface User {
   id: string;
   email: string;

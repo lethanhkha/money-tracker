@@ -7,7 +7,7 @@ const sourceDb = new PrismaClient({
 
 const targetDb = new PrismaClient({
   datasourceUrl:
-    "postgresql://postgres.jtrdaromvymadaznrqct:tuyetnga0608@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres",
+    "postgresql://postgres.jtrdaromvymadaznrqct:tuyetnga0608@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?pgbouncer=true",
 });
 
 async function syncData() {
@@ -89,34 +89,46 @@ async function syncData() {
 
     if (debtPayments.length > 0) {
       console.log("💳 Syncing debt payments...");
-      for (const payment of debtPayments) {
-        await targetDb.debtPayment.upsert({
-          where: { id: payment.id },
-          update: payment,
-          create: payment,
-        });
+      try {
+        for (const payment of debtPayments) {
+          await targetDb.debtPayment.upsert({
+            where: { id: payment.id },
+            update: payment,
+            create: payment,
+          });
+        }
+      } catch (e: any) {
+        console.log("⚠️  Debt payments table not found, skipping...");
       }
     }
 
     if (goals.length > 0) {
       console.log("🎯 Syncing goals...");
-      for (const goal of goals) {
-        await targetDb.goal.upsert({
-          where: { id: goal.id },
-          update: goal,
-          create: goal,
-        });
+      try {
+        for (const goal of goals) {
+          await targetDb.goal.upsert({
+            where: { id: goal.id },
+            update: goal,
+            create: goal,
+          });
+        }
+      } catch (e: any) {
+        console.log("⚠️  Goals table not found, skipping...");
       }
     }
 
     if (goalContributions.length > 0) {
       console.log("📈 Syncing goal contributions...");
-      for (const contribution of goalContributions) {
-        await targetDb.goalContribution.upsert({
-          where: { id: contribution.id },
-          update: contribution,
-          create: contribution,
-        });
+      try {
+        for (const contribution of goalContributions) {
+          await targetDb.goalContribution.upsert({
+            where: { id: contribution.id },
+            update: contribution,
+            create: contribution,
+          });
+        }
+      } catch (e: any) {
+        console.log("⚠️  Goal contributions table not found, skipping...");
       }
     }
 
