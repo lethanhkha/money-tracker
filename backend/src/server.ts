@@ -17,8 +17,8 @@ const PORT = process.env.PORT || 5000;
 // CORS configuration
 const allowedOrigins = [
   "http://localhost:3000", // Dev
-  "https://money-track.thanhkha.page", // Production custom domain
-  "https://money-tracker-flame-nine.vercel.app", // Vercel domain
+  "https://money-track.thanhkha.page", // Custom domain
+  "https://money-tracker-flame-nine.vercel.app", // Vercel
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
