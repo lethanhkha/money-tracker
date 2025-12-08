@@ -50,6 +50,8 @@ export default function LoginPage() {
     try {
       await login({ email, password });
     } catch (err: any) {
+      console.error("Login error:", err);
+
       // Handle network errors
       if (!err.response) {
         setError(
@@ -62,6 +64,8 @@ export default function LoginPage() {
       // Handle HTTP status codes
       const status = err.response?.status;
       const backendError = err.response?.data?.error;
+
+      console.log("Status:", status, "Error:", backendError);
 
       if (status === 401) {
         setError("Đăng nhập thất bại. Email hoặc mật khẩu không chính xác.");
@@ -76,7 +80,7 @@ export default function LoginPage() {
       } else if (backendError) {
         // Handle backend validation errors
         if (typeof backendError === "string") {
-          // Translate common backend errors
+          // Display backend error directly if it's already in Vietnamese
           const errorMap: { [key: string]: string } = {
             "Invalid credentials": "Email hoặc mật khẩu không chính xác",
             "User not found": "Tài khoản không tồn tại",

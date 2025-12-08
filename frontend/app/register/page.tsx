@@ -73,7 +73,9 @@ export default function RegisterPage() {
     try {
       await register({ name, email, password });
     } catch (err: any) {
-      // Handle network errors
+      console.error("Register error:", err);
+
+      // Handle network errors (no response from server)
       if (!err.response) {
         setError(
           "Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối internet."
@@ -86,12 +88,21 @@ export default function RegisterPage() {
       const status = err.response?.status;
       const backendError = err.response?.data?.error;
 
+      console.log("Status:", status, "Error:", backendError);
+
       if (status === 400) {
-        if (
-          backendError?.includes("email") ||
-          backendError?.includes("Email")
-        ) {
-          setError("Email đã được sử dụng. Vui lòng sử dụng email khác.");
+        // Check if backend error message is about email
+        if (backendError && typeof backendError === "string") {
+          if (
+            backendError.includes("email") ||
+            backendError.includes("Email") ||
+            backendError.includes("đã được sử dụng")
+          ) {
+            setError("Email đã được sử dụng. Vui lòng sử dụng email khác.");
+          } else {
+            // Display the backend error message directly if it's in Vietnamese
+            setError(backendError);
+          }
         } else {
           setError("Thông tin đăng ký không hợp lệ. Vui lòng kiểm tra lại.");
         }
@@ -106,18 +117,8 @@ export default function RegisterPage() {
       } else if (backendError) {
         // Handle backend validation errors
         if (typeof backendError === "string") {
-          // Translate common backend errors
-          const errorMap: { [key: string]: string } = {
-            "User already exists": "Email đã được sử dụng",
-            "Email already exists": "Email đã được sử dụng",
-            "Email already in use": "Email đã được sử dụng",
-            "Invalid email format": "Định dạng email không hợp lệ",
-            "Password too short": "Mật khẩu quá ngắn",
-            "Name is required": "Vui lòng nhập họ tên",
-            "Email is required": "Vui lòng nhập email",
-            "Password is required": "Vui lòng nhập mật khẩu",
-          };
-          setError(errorMap[backendError] || backendError);
+          // Display backend error directly if it's already in Vietnamese
+          setError(backendError);
         } else if (Array.isArray(backendError)) {
           // Zod validation errors - translate them
           const translatedErrors = backendError.map((e: any) => {
