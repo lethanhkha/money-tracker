@@ -51,7 +51,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setUser(response.user);
       router.push("/dashboard");
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Login failed");
+      // Re-throw the original error to preserve response data
+      throw error;
     }
   };
 
@@ -63,7 +64,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setUser(response.user);
       router.push("/dashboard");
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Registration failed");
+      // Re-throw the original error to preserve response data
+      throw error;
     }
   };
 
