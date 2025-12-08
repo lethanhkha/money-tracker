@@ -1,5 +1,4 @@
-import { Response } from "express";
-import { AuthRequest } from "../types";
+import { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 import {
   createCategorySchema,
@@ -11,7 +10,7 @@ import { z } from "zod";
 /**
  * Create a new category
  */
-export const createCategory = async (req: AuthRequest, res: Response) => {
+export const createCategory = async (req: Request, res: Response) => {
   try {
     const data = createCategorySchema.parse(req.body);
 
@@ -42,7 +41,7 @@ export const createCategory = async (req: AuthRequest, res: Response) => {
 /**
  * Get all categories for the authenticated user
  */
-export const getUserCategories = async (req: AuthRequest, res: Response) => {
+export const getUserCategories = async (req: Request, res: Response) => {
   try {
     const query = getCategoriesQuerySchema.parse(req.query);
 
@@ -75,7 +74,7 @@ export const getUserCategories = async (req: AuthRequest, res: Response) => {
 /**
  * Get a single category by ID
  */
-export const getCategoryById = async (req: AuthRequest, res: Response) => {
+export const getCategoryById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
@@ -106,7 +105,7 @@ export const getCategoryById = async (req: AuthRequest, res: Response) => {
 /**
  * Update a category (name, icon, color only - not type)
  */
-export const updateCategory = async (req: AuthRequest, res: Response) => {
+export const updateCategory = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const data = updateCategorySchema.parse(req.body);
@@ -142,7 +141,7 @@ export const updateCategory = async (req: AuthRequest, res: Response) => {
 /**
  * Delete a category
  */
-export const deleteCategory = async (req: AuthRequest, res: Response) => {
+export const deleteCategory = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 

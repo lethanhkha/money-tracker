@@ -1,5 +1,4 @@
-import { Response } from "express";
-import { AuthRequest } from "../types";
+import { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 import {
   createTransactionSchema,
@@ -16,7 +15,7 @@ import { z } from "zod";
 /**
  * Create a new transaction
  */
-export const createTransaction = async (req: AuthRequest, res: Response) => {
+export const createTransaction = async (req: Request, res: Response) => {
   try {
     const data = createTransactionSchema.parse(req.body);
     const userId = req.user!.userId;
@@ -111,7 +110,7 @@ export const createTransaction = async (req: AuthRequest, res: Response) => {
 /**
  * Get transactions with filters
  */
-export const getTransactions = async (req: AuthRequest, res: Response) => {
+export const getTransactions = async (req: Request, res: Response) => {
   try {
     const query = getTransactionsQuerySchema.parse(req.query);
     const userId = req.user!.userId;
@@ -166,7 +165,7 @@ export const getTransactions = async (req: AuthRequest, res: Response) => {
 /**
  * Get a single transaction by ID
  */
-export const getTransactionById = async (req: AuthRequest, res: Response) => {
+export const getTransactionById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
@@ -196,7 +195,7 @@ export const getTransactionById = async (req: AuthRequest, res: Response) => {
 /**
  * Update a transaction
  */
-export const updateTransaction = async (req: AuthRequest, res: Response) => {
+export const updateTransaction = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const data = updateTransactionSchema.parse(req.body);
@@ -308,7 +307,7 @@ export const updateTransaction = async (req: AuthRequest, res: Response) => {
 /**
  * Delete a transaction
  */
-export const deleteTransaction = async (req: AuthRequest, res: Response) => {
+export const deleteTransaction = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
@@ -413,7 +412,7 @@ export const deleteTransaction = async (req: AuthRequest, res: Response) => {
 /**
  * Mark tip as received (change status from pending to completed)
  */
-export const markTipAsReceived = async (req: AuthRequest, res: Response) => {
+export const markTipAsReceived = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const userId = req.user!.userId;

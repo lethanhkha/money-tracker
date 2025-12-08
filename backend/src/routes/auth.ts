@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { generateToken } from "../lib/jwt";
-import { authenticate, AuthRequest } from "../middleware/auth";
+import { authenticate } from "../middleware/auth";
 
 const router = Router();
 
@@ -170,7 +170,7 @@ router.post("/login", async (req: Request, res: Response) => {
 });
 
 // Get current user
-router.get("/me", authenticate, async (req: AuthRequest, res: Response) => {
+router.get("/me", authenticate, async (req: Request, res: Response) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.user!.userId },
@@ -195,90 +195,84 @@ router.get("/me", authenticate, async (req: AuthRequest, res: Response) => {
 });
 
 // Update profile
-router.put(
-  "/profile",
-  authenticate,
-  async (req: AuthRequest, res: Response) => {
-    try {
-      const data = updateProfileSchema.parse(req.body);
-      const userId = req.user!.userId;
+router.put("/profile", authenticate, async (req: Request, res: Response) => {
+  try {
+    const data = updateProfileSchema.parse(req.body);
+    const userId = req.user!.userId;
 
-      // Get current user
-      const currentUser = await prisma.user.findUnique({
-        where: { id: userId },
-      });
+    // Get current user
+    const currentUser = await prisma.user.findUnique({
+      where: { id: userId },
+    });
 
-      if (!currentUser) {
-        return res.status(404).json({ error: "User not found" });
-      }
-
-      // Check if email is being changed and if it's already taken
-      if (data.email && data.email !== currentUser.email) {
-        const existingUser = await prisma.user.findUnique({
-          where: { email: data.email },
-        });
-        if (existingUser) {
-          return res.status(400).json({ error: "Email đã được sử dụng!" });
-        }
-      }
-
-      // Prepare update data
-      const updateData: any = {};
-      if (data.name) updateData.name = data.name;
-      if (data.email) updateData.email = data.email;
-      if (data.avatar !== undefined) updateData.avatar = data.avatar;
-
-      // Handle password change
-      if (data.newPassword) {
-        if (!data.currentPassword) {
-          return res
-            .status(400)
-            .json({ error: "Vui lòng nhập mật khẩu hiện tại" });
-        }
-
-        // Verify current password
-        const isValidPassword = await bcrypt.compare(
-          data.currentPassword,
-          currentUser.password
-        );
-        if (!isValidPassword) {
-          return res
-            .status(400)
-            .json({ error: "Mật khẩu hiện tại không đúng" });
-        }
-
-        // Hash new password
-        updateData.password = await bcrypt.hash(data.newPassword, 10);
-      }
-
-      // Update user
-      const updatedUser = await prisma.user.update({
-        where: { id: userId },
-        data: updateData,
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          avatar: true,
-          createdAt: true,
-        },
-      });
-
-      res.json({
-        message: "Cập nhật thông tin thành công!",
-        user: updatedUser,
-      });
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const errorMessage = error.errors
-          .map((err) => `${err.path.join(".")}: ${err.message}`)
-          .join(", ");
-        return res.status(400).json({ error: errorMessage });
-      }
-      console.error(error);
-      res.status(500).json({ error: "Internal server error" });
+    if (!currentUser) {
+      return res.status(404).json({ error: "User not found" });
     }
+
+    // Check if email is being changed and if it's already taken
+    if (data.email && data.email !== currentUser.email) {
+      const existingUser = await prisma.user.findUnique({
+        where: { email: data.email },
+      });
+      if (existingUser) {
+        return res.status(400).json({ error: "Email đã được sử dụng!" });
+      }
+    }
+
+    // Prepare update data
+    const updateData: any = {};
+    if (data.name) updateData.name = data.name;
+    if (data.email) updateData.email = data.email;
+    if (data.avatar !== undefined) updateData.avatar = data.avatar;
+
+    // Handle password change
+    if (data.newPassword) {
+      if (!data.currentPassword) {
+        return res
+          .status(400)
+          .json({ error: "Vui lòng nhập mật khẩu hiện tại" });
+      }
+
+      // Verify current password
+      const isValidPassword = await bcrypt.compare(
+        data.currentPassword,
+        currentUser.password
+      );
+      if (!isValidPassword) {
+        return res.status(400).json({ error: "Mật khẩu hiện tại không đúng" });
+      }
+
+      // Hash new password
+      updateData.password = await bcrypt.hash(data.newPassword, 10);
+    }
+
+    // Update user
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        avatar: true,
+        createdAt: true,
+      },
+    });
+
+    res.json({
+      message: "Cập nhật thông tin thành công!",
+      user: updatedUser,
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const errorMessage = error.errors
+        .map((err) => `${err.path.join(".")}: ${err.message}`)
+        .join(", ");
+      return res.status(400).json({ error: errorMessage });
+    }
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
   }
-);
+});
 
 export default router;

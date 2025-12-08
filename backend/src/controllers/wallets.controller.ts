@@ -1,5 +1,4 @@
-import { Response } from "express";
-import { AuthRequest } from "../types";
+import { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 import {
   createWalletSchema,
@@ -10,7 +9,7 @@ import { z } from "zod";
 /**
  * Create a new wallet
  */
-export const createWallet = async (req: AuthRequest, res: Response) => {
+export const createWallet = async (req: Request, res: Response) => {
   try {
     const data = createWalletSchema.parse(req.body);
     const userId = req.user!.userId;
@@ -51,7 +50,7 @@ export const createWallet = async (req: AuthRequest, res: Response) => {
 /**
  * Get all wallets for the authenticated user
  */
-export const getUserWallets = async (req: AuthRequest, res: Response) => {
+export const getUserWallets = async (req: Request, res: Response) => {
   try {
     const wallets = await prisma.wallet.findMany({
       where: { userId: req.user!.userId },
@@ -76,7 +75,7 @@ export const getUserWallets = async (req: AuthRequest, res: Response) => {
 /**
  * Get a single wallet by ID
  */
-export const getWalletById = async (req: AuthRequest, res: Response) => {
+export const getWalletById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
@@ -107,7 +106,7 @@ export const getWalletById = async (req: AuthRequest, res: Response) => {
 /**
  * Update a wallet (name, icon, color only - not balance)
  */
-export const updateWallet = async (req: AuthRequest, res: Response) => {
+export const updateWallet = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const data = updateWalletSchema.parse(req.body);
@@ -140,7 +139,7 @@ export const updateWallet = async (req: AuthRequest, res: Response) => {
 /**
  * Delete a wallet
  */
-export const deleteWallet = async (req: AuthRequest, res: Response) => {
+export const deleteWallet = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const userId = req.user!.userId;
@@ -199,7 +198,7 @@ export const deleteWallet = async (req: AuthRequest, res: Response) => {
 /**
  * Set a wallet as default
  */
-export const setDefaultWallet = async (req: AuthRequest, res: Response) => {
+export const setDefaultWallet = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const userId = req.user!.userId;

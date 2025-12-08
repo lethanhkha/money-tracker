@@ -1,5 +1,4 @@
-import { Response } from "express";
-import { AuthRequest } from "../types";
+import { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 import {
   createDebtSchema,
@@ -16,7 +15,7 @@ import { z } from "zod";
 /**
  * Create a new debt
  */
-export const createDebt = async (req: AuthRequest, res: Response) => {
+export const createDebt = async (req: Request, res: Response) => {
   try {
     const data = createDebtSchema.parse(req.body);
     const userId = req.user!.userId;
@@ -49,7 +48,7 @@ export const createDebt = async (req: AuthRequest, res: Response) => {
 /**
  * Get all debts with filters
  */
-export const getDebts = async (req: AuthRequest, res: Response) => {
+export const getDebts = async (req: Request, res: Response) => {
   try {
     const query = getDebtsQuerySchema.parse(req.query);
     const userId = req.user!.userId;
@@ -92,7 +91,7 @@ export const getDebts = async (req: AuthRequest, res: Response) => {
 /**
  * Get a single debt by ID
  */
-export const getDebtById = async (req: AuthRequest, res: Response) => {
+export const getDebtById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
@@ -123,7 +122,7 @@ export const getDebtById = async (req: AuthRequest, res: Response) => {
 /**
  * Update a debt
  */
-export const updateDebt = async (req: AuthRequest, res: Response) => {
+export const updateDebt = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const data = updateDebtSchema.parse(req.body);
@@ -161,7 +160,7 @@ export const updateDebt = async (req: AuthRequest, res: Response) => {
 /**
  * Delete a debt
  */
-export const deleteDebt = async (req: AuthRequest, res: Response) => {
+export const deleteDebt = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
@@ -189,7 +188,7 @@ export const deleteDebt = async (req: AuthRequest, res: Response) => {
 /**
  * Make a partial payment on a debt
  */
-export const makePartialPayment = async (req: AuthRequest, res: Response) => {
+export const makePartialPayment = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const data = makePaymentSchema.parse(req.body);
@@ -271,7 +270,7 @@ export const makePartialPayment = async (req: AuthRequest, res: Response) => {
 /**
  * Get all payments for a specific debt
  */
-export const getDebtPayments = async (req: AuthRequest, res: Response) => {
+export const getDebtPayments = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const userId = req.user!.userId;
@@ -303,7 +302,7 @@ export const getDebtPayments = async (req: AuthRequest, res: Response) => {
 /**
  * Delete a payment and update debt accordingly
  */
-export const deleteDebtPayment = async (req: AuthRequest, res: Response) => {
+export const deleteDebtPayment = async (req: Request, res: Response) => {
   try {
     const { id, paymentId } = req.params;
     const userId = req.user!.userId;

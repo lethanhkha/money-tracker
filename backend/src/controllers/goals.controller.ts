@@ -1,5 +1,4 @@
-import { Response } from "express";
-import { AuthRequest } from "../types";
+import { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 import {
   createGoalSchema,
@@ -16,7 +15,7 @@ import { z } from "zod";
 /**
  * Create a new goal
  */
-export const createGoal = async (req: AuthRequest, res: Response) => {
+export const createGoal = async (req: Request, res: Response) => {
   try {
     const data = createGoalSchema.parse(req.body);
     const userId = req.user!.userId;
@@ -55,7 +54,7 @@ export const createGoal = async (req: AuthRequest, res: Response) => {
 /**
  * Get all goals with filters
  */
-export const getGoals = async (req: AuthRequest, res: Response) => {
+export const getGoals = async (req: Request, res: Response) => {
   try {
     const query = getGoalsQuerySchema.parse(req.query);
     const userId = req.user!.userId;
@@ -97,7 +96,7 @@ export const getGoals = async (req: AuthRequest, res: Response) => {
 /**
  * Get a single goal by ID
  */
-export const getGoalById = async (req: AuthRequest, res: Response) => {
+export const getGoalById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
@@ -128,7 +127,7 @@ export const getGoalById = async (req: AuthRequest, res: Response) => {
 /**
  * Update a goal
  */
-export const updateGoal = async (req: AuthRequest, res: Response) => {
+export const updateGoal = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const data = updateGoalSchema.parse(req.body);
@@ -173,7 +172,7 @@ export const updateGoal = async (req: AuthRequest, res: Response) => {
 /**
  * Delete a goal
  */
-export const deleteGoal = async (req: AuthRequest, res: Response) => {
+export const deleteGoal = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const userId = req.user!.userId;
@@ -297,7 +296,7 @@ export const deleteGoal = async (req: AuthRequest, res: Response) => {
 /**
  * Add contribution to a goal
  */
-export const addContribution = async (req: AuthRequest, res: Response) => {
+export const addContribution = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const data = addContributionSchema.parse(req.body);
@@ -448,7 +447,7 @@ export const addContribution = async (req: AuthRequest, res: Response) => {
 /**
  * Get all contributions for a goal
  */
-export const getGoalContributions = async (req: AuthRequest, res: Response) => {
+export const getGoalContributions = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const userId = req.user!.userId;
@@ -481,7 +480,7 @@ export const getGoalContributions = async (req: AuthRequest, res: Response) => {
  * Delete a contribution and refund to wallet
  */
 export const deleteGoalContribution = async (
-  req: AuthRequest,
+  req: Request,
   res: Response
 ) => {
   try {

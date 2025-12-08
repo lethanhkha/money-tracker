@@ -1,12 +1,11 @@
-import { Response } from "express";
-import { AuthRequest } from "../types";
+import { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 
 /**
  * Get financial summary
  * Returns total income, total expense, balance, pending tips
  */
-export const getFinancialSummary = async (req: AuthRequest, res: Response) => {
+export const getFinancialSummary = async (req: Request, res: Response) => {
   try {
     const userId = req.user!.userId;
 
@@ -132,7 +131,7 @@ export const getFinancialSummary = async (req: AuthRequest, res: Response) => {
  * Get financial trends
  * Returns monthly income/expense data for the last 6 months
  */
-export const getTrends = async (req: AuthRequest, res: Response) => {
+export const getTrends = async (req: Request, res: Response) => {
   try {
     const userId = req.user!.userId;
     const monthsBack = parseInt(req.query.months as string) || 6;
@@ -198,7 +197,7 @@ export const getTrends = async (req: AuthRequest, res: Response) => {
  * Get category breakdown
  * Returns spending/income by category
  */
-export const getCategoryBreakdown = async (req: AuthRequest, res: Response) => {
+export const getCategoryBreakdown = async (req: Request, res: Response) => {
   try {
     const userId = req.user!.userId;
     const type = req.query.type as "income" | "expense" | undefined;
@@ -288,7 +287,7 @@ export const getCategoryBreakdown = async (req: AuthRequest, res: Response) => {
  * Returns the most recent transactions
  */
 export const getRecentTransactions = async (
-  req: AuthRequest,
+  req: Request,
   res: Response
 ) => {
   try {
