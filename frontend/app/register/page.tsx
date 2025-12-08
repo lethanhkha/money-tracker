@@ -73,8 +73,6 @@ export default function RegisterPage() {
     try {
       await register({ name, email, password });
     } catch (err: any) {
-      console.error("Register error:", err);
-
       // Handle network errors (no response from server)
       if (!err.response) {
         setError(
@@ -87,8 +85,6 @@ export default function RegisterPage() {
       // Handle HTTP status codes
       const status = err.response?.status;
       const backendError = err.response?.data?.error;
-
-      console.log("Status:", status, "Error:", backendError);
 
       if (status === 400) {
         // Check if backend error message is about email

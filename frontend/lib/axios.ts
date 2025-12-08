@@ -30,9 +30,11 @@ axiosInstance.interceptors.response.use(
     // Only redirect to login if 401 is from authenticated endpoints
     // Don't redirect if 401 is from login/register endpoints (invalid credentials)
     if (error.response?.status === 401) {
-      const requestUrl = error.config?.url || '';
-      const isAuthEndpoint = requestUrl.includes('/auth/login') || requestUrl.includes('/auth/register');
-      
+      const requestUrl = error.config?.url || "";
+      const isAuthEndpoint =
+        requestUrl.includes("/auth/login") ||
+        requestUrl.includes("/auth/register");
+
       if (!isAuthEndpoint) {
         // 401 from protected endpoint - token expired or invalid
         localStorage.removeItem("token");

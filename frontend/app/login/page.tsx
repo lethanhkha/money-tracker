@@ -51,13 +51,8 @@ export default function LoginPage() {
       await login({ email, password });
       // Login successful - will redirect to dashboard
     } catch (err: any) {
-      // Prevent any navigation on error
-      console.error("Login error:", err);
-      console.error("Full error object:", JSON.stringify(err, null, 2));
-
       // Handle network errors
       if (!err.response) {
-        console.error("Network error - no response from server");
         setError(
           "Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối internet."
         );
@@ -67,10 +62,6 @@ export default function LoginPage() {
       // Handle HTTP status codes
       const status = err.response?.status;
       const backendError = err.response?.data?.error;
-
-      console.log("HTTP Status:", status);
-      console.log("Backend Error:", backendError);
-      console.log("Full response data:", err.response?.data);
 
       if (status === 401) {
         setError("Đăng nhập thất bại. Email hoặc mật khẩu không chính xác.");
