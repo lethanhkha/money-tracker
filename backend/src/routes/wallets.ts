@@ -8,6 +8,7 @@ const router = Router();
 router.use(authenticate);
 
 router.post("/", walletController.createWallet);
+router.post("/transfer", walletController.transferBetweenWallets);
 router.get("/", walletController.getUserWallets);
 router.get("/:id", walletController.getWalletById);
 router.put("/:id", walletController.updateWallet);

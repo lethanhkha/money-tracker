@@ -10,6 +10,7 @@ export interface Wallet {
   id: string;
   userId: string;
   name: string;
+  type: string;
   balance: number;
   currency: string;
   icon?: string;

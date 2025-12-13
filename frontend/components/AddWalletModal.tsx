@@ -10,6 +10,7 @@ interface AddWalletModalProps {
   onClose: () => void;
   onSubmit: (data: {
     name: string;
+    type: string;
     balance: number;
     currency: string;
     icon?: string;
@@ -66,6 +67,8 @@ export default function AddWalletModal({
 }: AddWalletModalProps) {
   const [formData, setFormData] = useState({
     name: "",
+    type: "cash",
+    customType: "",
     balance: "",
     currency: "VND",
     icon: "💰",
@@ -124,14 +127,19 @@ export default function AddWalletModal({
       }
     }
 
+    const finalType = formData.type === "custom" ? formData.customType.trim() : formData.type;
+
     onSubmit({
       ...formData,
       name: trimmedName,
+      type: finalType || "cash",
       balance: formData.balance ? parseFloat(formData.balance) : 0,
     });
     // Reset form
     setFormData({
       name: "",
+      type: "cash",
+      customType: "",
       balance: "",
       currency: "VND",
       icon: "💰",
@@ -155,6 +163,56 @@ export default function AddWalletModal({
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 placeholder:text-gray-500"
             placeholder="Ví dụ: Tiền mặt, Ngân hàng..."
           />
+        </div>
+
+        {/* Wallet Type */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Loại ví
+          </label>
+          <div className="flex gap-2 mb-2">
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, type: "cash" })}
+              className={`flex-1 px-3 py-2 rounded-lg border transition ${formData.type === "cash"
+                  ? "bg-emerald-100 border-emerald-500 text-emerald-700"
+                  : "bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100"
+                }`}
+            >
+              💵 Tiền mặt
+            </button>
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, type: "electronic" })}
+              className={`flex-1 px-3 py-2 rounded-lg border transition ${formData.type === "electronic"
+                  ? "bg-blue-100 border-blue-500 text-blue-700"
+                  : "bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100"
+                }`}
+            >
+              📱 Điện tử
+            </button>
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, type: "custom" })}
+              className={`flex-1 px-3 py-2 rounded-lg border transition ${formData.type === "custom"
+                  ? "bg-purple-100 border-purple-500 text-purple-700"
+                  : "bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100"
+                }`}
+            >
+              ✨ Khác
+            </button>
+          </div>
+          {formData.type === "custom" && (
+            <input
+              type="text"
+              value={formData.customType}
+              onChange={(e) =>
+                setFormData({ ...formData, customType: e.target.value })
+              }
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 placeholder:text-gray-500"
+              placeholder="Nhập loại ví tùy chỉnh..."
+            />
+          )}
         </div>
 
         {/* Balance */}
@@ -204,11 +262,10 @@ export default function AddWalletModal({
                 key={icon}
                 type="button"
                 onClick={() => setFormData({ ...formData, icon })}
-                className={`p-2 text-2xl rounded-lg transition hover:scale-110 flex items-center justify-center ${
-                  formData.icon === icon
+                className={`p-2 text-2xl rounded-lg transition hover:scale-110 flex items-center justify-center ${formData.icon === icon
                     ? "bg-indigo-100 ring-2 ring-indigo-500"
                     : "bg-gray-100 hover:bg-gray-200"
-                }`}
+                  }`}
               >
                 {icon}
               </button>
@@ -227,11 +284,10 @@ export default function AddWalletModal({
                 key={color}
                 type="button"
                 onClick={() => setFormData({ ...formData, color })}
-                className={`w-10 h-10 rounded-lg transition hover:scale-110 ${
-                  formData.color === color
+                className={`w-10 h-10 rounded-lg transition hover:scale-110 ${formData.color === color
                     ? "ring-2 ring-gray-900 ring-offset-2"
                     : ""
-                }`}
+                  }`}
                 style={{ backgroundColor: color }}
               />
             ))}

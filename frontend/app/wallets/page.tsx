@@ -7,14 +7,16 @@ import DashboardLayout from "@/components/DashboardLayout";
 import AddWalletModal from "@/components/AddWalletModal";
 import EditWalletModal from "@/components/EditWalletModal";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
+import TransferWalletModal from "@/components/TransferWalletModal";
 import { walletsApi } from "@/lib/api/wallets";
 import { Wallet } from "@/lib/types";
-import { Plus, Edit2, Trash2, Loader2, AlertCircle } from "lucide-react";
+import { Plus, Edit2, Trash2, Loader2, AlertCircle, ArrowLeftRight } from "lucide-react";
 import toast from "react-hot-toast";
 import { useCountAnimation } from "@/hooks/useCountAnimation";
 
 export default function WalletsPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [editingWallet, setEditingWallet] = useState<Wallet | null>(null);
   const [deletingWallet, setDeletingWallet] = useState<Wallet | null>(null);
   const queryClient = useQueryClient();
@@ -90,6 +92,21 @@ export default function WalletsPage() {
     },
   });
 
+  // Transfer between wallets mutation
+  const transferMutation = useMutation({
+    mutationFn: walletsApi.transfer,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["wallets"] });
+      setIsTransferModalOpen(false);
+      toast.success("Chuyển tiền thành công!");
+    },
+    onError: (error: any) => {
+      const errorMessage =
+        error.response?.data?.error || "Chuyển tiền thất bại. Vui lòng thử lại.";
+      toast.error(errorMessage);
+    },
+  });
+
   const totalBalance = wallets.reduce((sum, wallet) => sum + wallet.balance, 0);
   const animatedBalance = useCountAnimation(totalBalance, 1000);
 
@@ -120,13 +137,24 @@ export default function WalletsPage() {
                 Quản lý các ví tiền của bạn
               </p>
             </div>
-            <button
-              onClick={() => setIsAddModalOpen(true)}
-              className="flex items-center px-3 sm:px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-            >
-              <Plus className="w-5 h-5 sm:mr-2" />
-              <span className="hidden sm:inline">Thêm ví</span>
-            </button>
+            <div className="flex gap-2 flex-shrink-0">
+              <button
+                onClick={() => setIsTransferModalOpen(true)}
+                disabled={wallets.length < 2}
+                className="flex items-center px-3 sm:px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                title={wallets.length < 2 ? "Cần có ít nhất 2 ví để chuyển tiền" : "Chuyển tiền giữa các ví"}
+              >
+                <ArrowLeftRight className="w-5 h-5 sm:mr-2" />
+                <span className="hidden sm:inline">Chuyển tiền</span>
+              </button>
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="flex items-center px-3 sm:px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+              >
+                <Plus className="w-5 h-5 sm:mr-2" />
+                <span className="hidden sm:inline">Thêm ví</span>
+              </button>
+            </div>
           </div>
 
           {/* Loading state */}
@@ -177,14 +205,50 @@ export default function WalletsPage() {
           {/* Total balance card */}
           {!isLoading && !error && wallets.length > 0 && (
             <>
-              <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg p-8 text-white animate-scaleIn">
-                <p className="text-sm font-medium opacity-90">Tổng số dư</p>
-                <p className="mt-2 text-4xl font-bold">
-                  {formatCurrency(animatedBalance)}
-                </p>
-                <p className="mt-2 text-sm opacity-75">
-                  {wallets.length} ví tiền
-                </p>
+              <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg p-6 sm:p-8 text-white animate-scaleIn">
+                <div className="flex flex-col gap-4">
+                  <div>
+                    <p className="text-sm font-medium opacity-90">Tổng số dư</p>
+                    <p className="mt-2 text-3xl sm:text-4xl font-bold">
+                      {formatCurrency(animatedBalance)}
+                    </p>
+                    <p className="mt-1 text-sm opacity-75">
+                      {wallets.length} ví tiền
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {(() => {
+                      const cashWallets = wallets.filter(w => w.type === 'cash' || !w.type);
+                      const electronicWallets = wallets.filter(w => w.type === 'electronic');
+                      const otherWallets = wallets.filter(w => w.type && !['cash', 'electronic'].includes(w.type));
+                      const cashBalance = cashWallets.reduce((sum, w) => sum + w.balance, 0);
+                      const electronicBalance = electronicWallets.reduce((sum, w) => sum + w.balance, 0);
+                      const otherBalance = otherWallets.reduce((sum, w) => sum + w.balance, 0);
+                      return (
+                        <>
+                          {cashWallets.length > 0 && (
+                            <div className="bg-white rounded-lg px-4 py-3 text-gray-900">
+                              <p className="text-xs text-gray-500 font-medium">💵 Tiền mặt ({cashWallets.length})</p>
+                              <p className="font-bold text-lg">{formatCurrency(cashBalance)}</p>
+                            </div>
+                          )}
+                          {electronicWallets.length > 0 && (
+                            <div className="bg-white rounded-lg px-4 py-3 text-gray-900">
+                              <p className="text-xs text-gray-500 font-medium">📱 Điện tử ({electronicWallets.length})</p>
+                              <p className="font-bold text-lg">{formatCurrency(electronicBalance)}</p>
+                            </div>
+                          )}
+                          {otherWallets.length > 0 && (
+                            <div className="bg-white rounded-lg px-4 py-3 text-gray-900">
+                              <p className="text-xs text-gray-500 font-medium">✨ Khác ({otherWallets.length})</p>
+                              <p className="font-bold text-lg">{formatCurrency(otherBalance)}</p>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
               </div>
 
               {/* Wallets grid */}
@@ -194,9 +258,8 @@ export default function WalletsPage() {
                     key={wallet.id}
                     className="rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-all duration-300 hover:scale-105 relative overflow-hidden animate-slideUp card-hover"
                     style={{
-                      background: `linear-gradient(135deg, ${
-                        wallet.color || "#6366f1"
-                      } 0%, ${wallet.color || "#6366f1"}dd 100%)`,
+                      background: `linear-gradient(135deg, ${wallet.color || "#6366f1"
+                        } 0%, ${wallet.color || "#6366f1"}dd 100%)`,
                       animationDelay: `${0.1 + index * 0.1}s`,
                     }}
                   >
@@ -253,6 +316,12 @@ export default function WalletsPage() {
                     <p className="text-sm text-white text-opacity-90 mt-1 relative z-10">
                       {wallet.currency}
                     </p>
+                    {/* Wallet type badge - bottom right */}
+                    <div className="absolute bottom-4 right-4 z-10">
+                      <span className="inline-block px-3 py-1 text-xs font-semibold bg-white text-gray-800 rounded-full shadow-sm">
+                        {wallet.type === 'cash' || !wallet.type ? '💵 Tiền mặt' : wallet.type === 'electronic' ? '📱 Điện tử' : `✨ ${wallet.type}`}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -290,6 +359,14 @@ export default function WalletsPage() {
             isLoading={deleteMutation.isPending}
           />
         )}
+
+        <TransferWalletModal
+          isOpen={isTransferModalOpen}
+          onClose={() => setIsTransferModalOpen(false)}
+          onSubmit={(data) => transferMutation.mutate(data)}
+          wallets={wallets}
+          isLoading={transferMutation.isPending}
+        />
       </DashboardLayout>
     </ProtectedRoute>
   );

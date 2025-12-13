@@ -3,6 +3,7 @@ import { Wallet } from "../types";
 
 export interface CreateWalletData {
   name: string;
+  type?: string;
   balance: number;
   currency: string;
   icon?: string;
@@ -11,6 +12,7 @@ export interface CreateWalletData {
 
 export interface UpdateWalletData {
   name?: string;
+  type?: string;
   icon?: string;
   color?: string;
 }
@@ -72,4 +74,29 @@ export const walletsApi = {
     );
     return response.data;
   },
+
+  // Transfer money between wallets
+  transfer: async (data: TransferData): Promise<TransferResponse> => {
+    const response = await axiosInstance.post<TransferResponse>(
+      "/wallets/transfer",
+      data
+    );
+    return response.data;
+  },
 };
+
+export interface TransferData {
+  fromWalletId: string;
+  toWalletId: string;
+  amount: number;
+  description?: string;
+}
+
+export interface TransferResponse {
+  message: string;
+  data: {
+    fromWallet: Wallet;
+    toWallet: Wallet;
+    amount: number;
+  };
+}

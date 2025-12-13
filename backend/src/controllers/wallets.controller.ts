@@ -4,6 +4,7 @@ import {
   createWalletSchema,
   updateWalletSchema,
 } from "../validators/wallet.validator";
+import { transferSchema } from "../validators/transfer.validator";
 import { z } from "zod";
 
 /**
@@ -24,6 +25,7 @@ export const createWallet = async (req: Request, res: Response) => {
     const wallet = await prisma.wallet.create({
       data: {
         name: data.name,
+        type: data.type,
         balance: data.balance,
         currency: data.currency,
         icon: data.icon,
@@ -231,6 +233,66 @@ export const setDefaultWallet = async (req: Request, res: Response) => {
     res.json({ message: "Default wallet updated successfully" });
   } catch (error) {
     console.error("Set default wallet error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+/**
+ * Transfer money between wallets
+ */
+export const transferBetweenWallets = async (req: Request, res: Response) => {
+  try {
+    const data = transferSchema.parse(req.body);
+    const userId = req.user!.userId;
+
+    // Verify both wallets exist and belong to user
+    const [fromWallet, toWallet] = await Promise.all([
+      prisma.wallet.findUnique({ where: { id: data.fromWalletId } }),
+      prisma.wallet.findUnique({ where: { id: data.toWalletId } }),
+    ]);
+
+    if (!fromWallet) {
+      return res.status(404).json({ error: "Ví nguồn không tồn tại" });
+    }
+
+    if (!toWallet) {
+      return res.status(404).json({ error: "Ví đích không tồn tại" });
+    }
+
+    if (fromWallet.userId !== userId || toWallet.userId !== userId) {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
+
+    // Check sufficient balance
+    if (fromWallet.balance < data.amount) {
+      return res.status(400).json({ error: "Số dư ví nguồn không đủ" });
+    }
+
+    // Perform transfer in transaction
+    const [updatedFromWallet, updatedToWallet] = await prisma.$transaction([
+      prisma.wallet.update({
+        where: { id: data.fromWalletId },
+        data: { balance: { decrement: data.amount } },
+      }),
+      prisma.wallet.update({
+        where: { id: data.toWalletId },
+        data: { balance: { increment: data.amount } },
+      }),
+    ]);
+
+    res.json({
+      message: "Chuyển tiền thành công",
+      data: {
+        fromWallet: updatedFromWallet,
+        toWallet: updatedToWallet,
+        amount: data.amount,
+      },
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: error.errors });
+    }
+    console.error("Transfer error:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };

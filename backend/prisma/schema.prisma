@@ -32,6 +32,7 @@ model Wallet {
   id        String   @id @default(uuid())
   userId    String
   name      String
+  type      String   @default("cash") // 'cash', 'electronic', or custom
   balance   Float    @default(0)
   currency  String   @default("VND")
   icon      String?

@@ -5,6 +5,7 @@ export const createWalletSchema = z.object({
     .string()
     .min(2, "Tên ví phải có ít nhất 2 ký tự")
     .max(50, "Tên ví không được quá 50 ký tự"),
+  type: z.string().default("cash"),
   balance: z.number().default(0),
   currency: z.string().default("VND"),
   icon: z.string().optional(),
@@ -17,6 +18,7 @@ export const updateWalletSchema = z.object({
     .min(2, "Tên ví phải có ít nhất 2 ký tự")
     .max(50, "Tên ví không được quá 50 ký tự")
     .optional(),
+  type: z.string().optional(),
   icon: z.string().optional(),
   color: z.string().optional(),
 });
