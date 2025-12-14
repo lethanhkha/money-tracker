@@ -9,6 +9,17 @@ import { transactionsApi } from "@/lib/api/transactions";
 import { Plus, Minus, RotateCcw, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
+// Helper function to get current datetime in local timezone format for datetime-local input
+const getLocalDateTimeString = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
 interface AddTransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -25,7 +36,7 @@ export default function AddTransactionModal({
     categoryId: "",
     walletId: "",
     description: "",
-    date: new Date().toISOString().slice(0, 16),
+    date: getLocalDateTimeString(),
     isPending: false,
   });
 
@@ -144,7 +155,7 @@ export default function AddTransactionModal({
         categoryId: "",
         walletId: "",
         description: "",
-        date: new Date().toISOString().slice(0, 16),
+        date: getLocalDateTimeString(),
         isPending: false,
       });
       setSelectedCategory(null);
@@ -285,11 +296,10 @@ export default function AddTransactionModal({
                 });
                 setSelectedCategory(null);
               }}
-              className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 ${
-                formData.type === "expense"
-                  ? "bg-red-500 text-white shadow-md"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
+              className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 ${formData.type === "expense"
+                ? "bg-red-500 text-white shadow-md"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
             >
               Chi tiêu
             </button>
@@ -304,11 +314,10 @@ export default function AddTransactionModal({
                 });
                 setSelectedCategory(null);
               }}
-              className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 ${
-                formData.type === "income"
-                  ? "bg-green-500 text-white shadow-md"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
+              className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 ${formData.type === "income"
+                ? "bg-green-500 text-white shadow-md"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
             >
               Thu nhập
             </button>
@@ -399,11 +408,10 @@ export default function AddTransactionModal({
                 key={cat.id}
                 type="button"
                 onClick={() => handleCategorySelect(cat.id.toString())}
-                className={`flex items-center gap-2 p-3 rounded-lg border-2 transition-all duration-200 transform hover:scale-105 ${
-                  formData.categoryId === cat.id.toString()
-                    ? "border-indigo-500 shadow-md"
-                    : "border-gray-300 hover:border-gray-400"
-                }`}
+                className={`flex items-center gap-2 p-3 rounded-lg border-2 transition-all duration-200 transform hover:scale-105 ${formData.categoryId === cat.id.toString()
+                  ? "border-indigo-500 shadow-md"
+                  : "border-gray-300 hover:border-gray-400"
+                  }`}
                 style={{
                   backgroundColor:
                     formData.categoryId === cat.id.toString()
